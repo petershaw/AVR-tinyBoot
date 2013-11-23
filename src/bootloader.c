@@ -1,27 +1,22 @@
 //
 // AVR tinyBoot 
 //
-
 #include <string.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/boot.h>
 #include <util/delay.h>
 #include "../src-lib/uart/uart.h"
-
 #ifndef BUILD_DATE
 #define BUILD_DATE unknown
 #endif
-
 #define BOOT_UART_BAUD_RATE     9600     // Baudrate
 #define XON                     17       // XON Zeichen
 #define XOFF                    19       // XOFF Zeichen
 #define START_SIGN              ':'      // Hex-Datei Zeilenstartzeichen
-
 // Zustände des Bootloader-Programms
 #define BOOT_STATE_EXIT	        0
 #define BOOT_STATE_PARSER       1
-
 // Zustände des Hex-File-Parsers
 #define PARSER_STATE_START      0
 #define PARSER_STATE_SIZE       1
@@ -30,7 +25,6 @@
 #define PARSER_STATE_DATA       4
 #define PARSER_STATE_CHECKSUM   5
 #define PARSER_STATE_ERROR      6
-
 void program_page (uint32_t page, uint8_t *buf)
 {
     uint16_t i;
@@ -64,7 +58,6 @@ void program_page (uint32_t page, uint8_t *buf)
     // Re-enable interrupts (if they were ever enabled).
     SREG = sreg;
 }
-
 static uint16_t hex2num (const uint8_t * ascii, uint8_t num)
 {
     uint8_t  i;
@@ -84,7 +77,6 @@ static uint16_t hex2num (const uint8_t * ascii, uint8_t num)
     
     return val;
 }
-
 int main()
 {
     // Empfangenes Zeichen + Statuscode
@@ -136,7 +128,7 @@ int main()
     sei();
     uart_puts("Bootloader build at ");
     uart_puts(BUILD_DATE);
-    uart_puts("\r\n");
+    uart_puts("\n");
     uart_puts("Boot> ");
     _delay_ms(2000);
     
@@ -233,7 +225,7 @@ int main()
                             // Puffer voll -> schreibe Page 
                             if(flash_cnt == SPM_PAGESIZE)
                             {
-                                uart_puts("P\n\r");
+                                uart_puts("!\n");
                                 _delay_ms(100);
                                 program_page((uint16_t)flash_page, flash_data);
                                 memset(flash_data, 0xFF, sizeof(flash_data));
@@ -255,7 +247,7 @@ int main()
                             // Dateiende -> schreibe Restdaten 
                             if(hex_type == 1)
                             {
-                                uart_puts("P\n\r");
+                                uart_puts("\nOK.\nBooting application.\n");
                                 _delay_ms(100);
                                 program_page((uint16_t)flash_page, flash_data);
                                 boot_state = BOOT_STATE_EXIT;
@@ -268,7 +260,7 @@ int main()
                         break;
                         // Parserfehler (falsche Checksumme) 
                     case PARSER_STATE_ERROR:
-                        uart_putc('#');
+                        uart_putc('#error ');
                         break;
                     default:
                         break;
