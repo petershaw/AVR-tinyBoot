@@ -210,7 +210,6 @@ int main()
                         if(hex_cnt == 2)
                         {
                             uart_putc(XOFF);
-                            uart_putc('.');
                             hex_cnt = 0;
                             flash_data[flash_cnt] = (uint8_t)hex2num(hex_buffer, 2);
                             hex_check += flash_data[flash_cnt];
@@ -225,7 +224,7 @@ int main()
                             // Puffer voll -> schreibe Page 
                             if(flash_cnt == SPM_PAGESIZE)
                             {
-                                uart_puts("!\n");
+                                uart_puts("*");
                                 _delay_ms(100);
                                 program_page((uint16_t)flash_page, flash_data);
                                 memset(flash_data, 0xFF, sizeof(flash_data));
